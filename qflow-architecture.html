@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QFlow | Architecture Guide</title>
+    <style>
+      :root {
+        --navy: #16324f;
+        --teal: #0f766e;
+        --teal-dark: #115e59;
+        --pale-teal: #ccfbf1;
+        --sky: #38bdf8;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --paper: #ffffff;
+        --canvas: #f8fafc;
+        --amber: #d97706;
+        --green: #16a34a;
+        --blue: #2563eb;
+        --red: #dc2626;
+        --shadow: 0 20px 50px rgba(22, 50, 79, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--canvas);
+        font-family: "Segoe UI", system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      .shell {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 72px 0 82px;
+        color: white;
+        background: var(--navy);
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 430px;
+        height: 430px;
+        right: -130px;
+        top: -170px;
+        border: 70px solid rgba(56, 189, 248, 0.16);
+        border-radius: 50%;
+      }
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        max-width: 760px;
+      }
+      .kicker,
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--sky);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+      h1 {
+        margin-bottom: 18px;
+        font-size: clamp(42px, 7vw, 78px);
+        line-height: 0.98;
+        letter-spacing: -0.055em;
+      }
+      .hero p:not(.kicker) {
+        max-width: 650px;
+        margin-bottom: 28px;
+        color: #dbeafe;
+        font-size: 18px;
+      }
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .button {
+        border: 1px solid transparent;
+        border-radius: 9px;
+        padding: 11px 15px;
+        color: white;
+        background: var(--teal);
+        font-weight: 800;
+        text-decoration: none;
+        transition:
+          transform 0.2s,
+          background 0.2s;
+      }
+      .button:hover {
+        transform: translateY(-2px);
+        background: var(--teal-dark);
+      }
+      .button.secondary {
+        border-color: rgba(255, 255, 255, 0.3);
+        background: transparent;
+      }
+      main {
+        padding: 42px 0 80px;
+      }
+      .section {
+        margin-bottom: 52px;
+        scroll-margin-top: 24px;
+      }
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+      }
+      .section-heading h2 {
+        margin-bottom: 0;
+        color: var(--navy);
+        font-size: 28px;
+        letter-spacing: -0.03em;
+      }
+      .section-heading p {
+        max-width: 590px;
+        margin-bottom: 0;
+        color: var(--muted);
+      }
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--paper);
+        box-shadow: var(--shadow);
+      }
+      .tree-panel {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        overflow: hidden;
+      }
+      .tree {
+        padding: 28px;
+        background: #f1f5f9;
+      }
+      .tree pre {
+        margin: 0;
+        overflow-x: auto;
+        color: var(--navy);
+        font:
+          14px/1.8 Consolas,
+          monospace;
+      }
+      .tree .folder {
+        color: var(--teal);
+        font-weight: 800;
+      }
+      .tree .important {
+        color: var(--blue);
+        font-weight: 800;
+      }
+      .tree-detail {
+        padding: 28px;
+      }
+      .tree-detail h3 {
+        color: var(--navy);
+      }
+      .detail-list {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+      .detail-list li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        color: var(--muted);
+      }
+      .detail-list strong {
+        min-width: 132px;
+        color: var(--ink);
+      }
+      .arch-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .arch-card {
+        position: relative;
+        padding: 19px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--paper);
+        transition:
+          transform 0.2s,
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .arch-card:hover,
+      .arch-card.active {
+        transform: translateY(-4px);
+        border-color: var(--teal);
+        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.14);
+      }
+      .arch-card::after {
+        content: "↓";
+        position: absolute;
+        right: -19px;
+        top: 42%;
+        color: var(--sky);
+        font-size: 22px;
+      }
+      .arch-card:last-child::after {
+        display: none;
+      }
+      .icon {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        margin-bottom: 14px;
+        border-radius: 11px;
+        color: var(--teal);
+        background: var(--pale-teal);
+        font-weight: 900;
+      }
+      .arch-card h3 {
+        margin-bottom: 6px;
+        font-size: 17px;
+        color: var(--navy);
+      }
+      .arch-card p {
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .interface-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+      .interface-card {
+        padding: 21px;
+        border-top: 4px solid var(--teal);
+      }
+      .interface-card:nth-child(2) {
+        border-top-color: var(--blue);
+      }
+      .interface-card:nth-child(3) {
+        border-top-color: var(--amber);
+      }
+      .interface-card:nth-child(4) {
+        border-top-color: var(--navy);
+      }
+      .interface-card h3 {
+        margin-bottom: 8px;
+        color: var(--navy);
+      }
+      .interface-card p {
+        min-height: 62px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .interface-card ul {
+        padding-left: 17px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .state-panel {
+        padding: 25px;
+      }
+      .state-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .state-button {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 9px 13px;
+        color: var(--muted);
+        background: white;
+        font-weight: 800;
+      }
+      .state-button.active {
+        border-color: var(--teal);
+        color: white;
+        background: var(--teal);
+      }
+      .lifecycle {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+      }
+      .state {
+        position: relative;
+        padding: 19px;
+        text-align: center;
+        border: 1px solid var(--line);
+        border-right: 0;
+        background: #fff;
+        opacity: 0.42;
+        transition:
+          opacity 0.25s,
+          background 0.25s,
+          transform 0.25s;
+      }
+      .state:first-child {
+        border-radius: 12px 0 0 12px;
+      }
+      .state:last-child {
+        border-right: 1px solid var(--line);
+        border-radius: 0 12px 12px 0;
+      }
+      .state.reached {
+        opacity: 1;
+        background: #f0fdfa;
+      }
+      .state.current {
+        transform: scale(1.04);
+        border-color: var(--teal);
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.14);
+      }
+      .state strong {
+        display: block;
+        color: var(--navy);
+      }
+      .state small {
+        color: var(--muted);
+      }
+      .state-note {
+        min-height: 24px;
+        margin: 22px 0 0;
+        color: var(--teal-dark);
+        font-weight: 700;
+        text-align: center;
+      }
+      .data-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .data-card {
+        padding: 20px;
+      }
+      .data-card h3 {
+        margin-bottom: 7px;
+        color: var(--navy);
+        font-size: 16px;
+      }
+      .data-card p {
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .data-card code,
+      .tree code {
+        color: var(--teal-dark);
+        font-family: Consolas, monospace;
+      }
+      .footer {
+        padding: 24px 0 38px;
+        color: var(--muted);
+        font-size: 13px;
+        text-align: center;
+      }
+      @media (max-width: 850px) {
+        .tree-panel {
+          grid-template-columns: 1fr;
+        }
+        .arch-grid,
+        .interface-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .arch-card:nth-child(2)::after {
+          display: none;
+        }
+      }
+      @media (max-width: 560px) {
+        .shell {
+          width: min(100% - 28px, 1180px);
+        }
+        .hero {
+          padding: 52px 0 60px;
+        }
+        .section-heading {
+          display: block;
+        }
+        .section-heading p {
+          margin-top: 8px;
+        }
+        .arch-grid,
+        .interface-grid,
+        .data-grid {
+          grid-template-columns: 1fr;
+        }
+        .arch-card::after {
+          display: none;
+        }
+        .lifecycle {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .state,
+        .state:first-child,
+        .state:last-child {
+          border: 1px solid var(--line);
+          border-radius: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="shell hero-inner">
+        <p class="kicker">QFlow · Architecture guide</p>
+        <h1>How the queue moves.</h1>
+        <p>
+          A visual map of the React prototype: four operational interfaces, one
+          shared state machine, and a lifecycle that keeps every patient moving
+          through the facility.
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="#structure">Explore the structure</a>
+          <a class="button secondary" href="#lifecycle">Run the lifecycle</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="section" id="structure">
+        <div class="section-heading">
+          <h2>Project structure</h2>
+          <p>
+            The folders separate user-facing workflows from the shared
+            operational logic that connects them.
+          </p>
+        </div>
+        <div class="panel tree-panel">
+          <div class="tree">
+            <pre><span class="folder">Qflow/</span>
+├── index.html
+├── package.json
+├── vite.config.js
+├── <span class="folder">public/</span>
+└── <span class="folder">src/</span>
+    ├── App.jsx
+    ├── App.css
+    ├── index.css
+    ├── main.jsx
+    ├── <span class="important">context/</span>
+    │   ├── QFlowContext.jsx
+    │   └── QueueContext.jsx
+    ├── <span class="important">interfaces/</span>
+    │   ├── Patient/PatientView.jsx
+    │   ├── Staff/StaffView.jsx
+    │   ├── Reception/ReceptionView.jsx
+    │   └── Overview/FacilityOverview.jsx
+    ├── <span class="important">theme/</span>
+    │   └── theme.js
+    └── <span class="folder">assets/</span></pre>
+          </div>
+          <div class="tree-detail">
+            <p class="eyebrow">Read it from the center</p>
+            <h3>QFlow has one source of truth.</h3>
+            <ul class="detail-list">
+              <li>
+                <strong>main.jsx</strong
+                ><span>Mounts the app inside <code>QFlowProvider</code>.</span>
+              </li>
+              <li>
+                <strong>QFlowContext</strong
+                ><span
+                  >Owns visits, queues, lifecycle rules, routing, metrics, and
+                  live sync.</span
+                >
+              </li>
+              <li>
+                <strong>interfaces/</strong
+                ><span
+                  >Each view reads the same state and dispatches operational
+                  actions.</span
+                >
+              </li>
+              <li>
+                <strong>theme/</strong
+                ><span
+                  >Stores the semantic palette and queue/status constants.</span
+                >
+              </li>
+              <li>
+                <strong>App.jsx</strong
+                ><span
+                  >Acts as the prototype shell and switches between client
+                  views.</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="flow">
+        <div class="section-heading">
+          <h2>Data flow</h2>
+          <p>
+            Every interface speaks to the context. No view owns a duplicate
+            queue or invents its own patient status.
+          </p>
+        </div>
+        <div class="arch-grid">
+          <article class="arch-card">
+            <div class="icon">UI</div>
+            <h3>Client views</h3>
+            <p>
+              Patient, staff, reception, and overview screens render the current
+              operational state.
+            </p>
+          </article>
+          <article class="arch-card">
+            <div class="icon">↔</div>
+            <h3>QFlow Context</h3>
+            <p>
+              React Context exposes selectors and action functions to all
+              connected interfaces.
+            </p>
+          </article>
+          <article class="arch-card">
+            <div class="icon">◆</div>
+            <h3>Reducer rules</h3>
+            <p>
+              Lifecycle validation, priority ordering, occupancy, routing, and
+              timestamps are enforced here.
+            </p>
+          </article>
+          <article class="arch-card">
+            <div class="icon">◉</div>
+            <h3>Live updates</h3>
+            <p>
+              BroadcastChannel mirrors actions between same-origin tabs without
+              manual refresh.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="interfaces">
+        <div class="section-heading">
+          <h2>Four interfaces, four jobs</h2>
+          <p>
+            The system stays focused on movement logistics. Clinical records and
+            treatment data never enter this state model.
+          </p>
+        </div>
+        <div class="interface-grid">
+          <article class="panel interface-card">
+            <h3>Patient</h3>
+            <p>Minimal, mobile-first guidance for one person's visit.</p>
+            <ul>
+              <li>Ticket and status</li>
+              <li>Current location</li>
+              <li>People ahead and wait</li>
+              <li>Called instructions</li>
+            </ul>
+          </article>
+          <article class="panel interface-card">
+            <h3>Staff</h3>
+            <p>Dense queue control for one service point.</p>
+            <ul>
+              <li>Priority-ordered queue</li>
+              <li>Call and start service</li>
+              <li>Complete or route</li>
+              <li>Occupancy awareness</li>
+            </ul>
+          </article>
+          <article class="panel interface-card">
+            <h3>Reception</h3>
+            <p>Fast entry and visit lookup at the front desk.</p>
+            <ul>
+              <li>Manual check-in</li>
+              <li>Unique ticket</li>
+              <li>Active visit search</li>
+              <li>Current stage</li>
+            </ul>
+          </article>
+          <article class="panel interface-card">
+            <h3>Overview</h3>
+            <p>Facility-wide visibility for supervisors.</p>
+            <ul>
+              <li>Active and completed totals</li>
+              <li>Queue lengths</li>
+              <li>Wait estimates</li>
+              <li>Congestion signals</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="lifecycle">
+        <div class="section-heading">
+          <h2>Prototype lifecycle</h2>
+          <p>
+            Click a state to see what the reducer and interface should do at
+            each point in a patient's journey.
+          </p>
+        </div>
+        <div class="panel state-panel">
+          <div
+            class="state-controls"
+            role="tablist"
+            aria-label="Queue lifecycle states"
+          >
+            <button class="state-button active" data-state="0" role="tab">
+              Waiting
+            </button>
+            <button class="state-button" data-state="1" role="tab">
+              Called
+            </button>
+            <button class="state-button" data-state="2" role="tab">
+              Being served
+            </button>
+            <button class="state-button" data-state="3" role="tab">
+              Completed
+            </button>
+          </div>
+          <div class="lifecycle" aria-live="polite">
+            <div class="state reached current">
+              <strong>Waiting</strong><small>joins activeQueue</small>
+            </div>
+            <div class="state">
+              <strong>Called</strong><small>occupies service point</small>
+            </div>
+            <div class="state">
+              <strong>Being served</strong><small>service begins</small>
+            </div>
+            <div class="state">
+              <strong>Completed</strong><small>entry leaves activeQueue</small>
+            </div>
+          </div>
+          <p class="state-note">
+            Patient joins the selected service point and receives a live queue
+            position.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="state">
+        <div class="section-heading">
+          <h2>What the context stores</h2>
+          <p>
+            These are logistics records: where a visit is, how it moves, and how
+            long the queue is likely to take.
+          </p>
+        </div>
+        <div class="data-grid">
+          <article class="panel data-card">
+            <h3>servicePoints</h3>
+            <p>
+              Configured locations with availability, average service time,
+              active visit, and <code>activeQueue</code> entry IDs.
+            </p>
+          </article>
+          <article class="panel data-card">
+            <h3>visits</h3>
+            <p>
+              Visit identity, ticket, priority, current service point, current
+              status, check-in time, completion time, and visited locations.
+            </p>
+          </article>
+          <article class="panel data-card">
+            <h3>queueEntries</h3>
+            <p>
+              Historical movement records with joined, called, service-started,
+              and service-ended timestamps.
+            </p>
+          </article>
+          <article class="panel data-card">
+            <h3>priorityRank</h3>
+            <p>
+              Emergency floats before Urgent, which floats before Normal. Equal
+              priorities remain FIFO.
+            </p>
+          </article>
+          <article class="panel data-card">
+            <h3>getQueuePosition</h3>
+            <p>
+              Finds a visit's live position in the current service-point queue.
+            </p>
+          </article>
+          <article class="panel data-card">
+            <h3>getWaitMinutes</h3>
+            <p>
+              Returns position multiplied by that service point's average
+              service time.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="shell">
+        QFlow architecture guide · operational flow only · no clinical records
+      </div>
+    </footer>
+
+    <script>
+      const notes = [
+        "Patient joins the selected service point and receives a live queue position.",
+        "Staff calls the highest-priority waiting ticket and gives movement instructions.",
+        "The service point starts care; the visit is now occupied and unavailable to another call.",
+        "The current queue entry is closed. The visit can finish or route atomically to a new queue.",
+      ];
+      const buttons = document.querySelectorAll(".state-button");
+      const states = document.querySelectorAll(".state");
+      const note = document.querySelector(".state-note");
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const selected = Number(button.dataset.state);
+          buttons.forEach((item, index) =>
+            item.classList.toggle("active", index === selected),
+          );
+          states.forEach((item, index) => {
+            item.classList.toggle("reached", index <= selected);
+            item.classList.toggle("current", index === selected);
+          });
+          note.textContent = notes[selected];
+        });
+      });
+    </script>
+  </body>
+</html>
