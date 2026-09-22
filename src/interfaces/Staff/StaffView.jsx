@@ -150,18 +150,6 @@ function StaffView({ defaultServicePointId = "triage" }) {
                 <p className="font-bold text-slate-700">
                   No patient at this service point
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Call the next patient when you are ready.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => callPatient(servicePointId)}
-                  disabled={waitingQueue.length === 0}
-                  className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-teal-700 px-4 py-2 text-sm font-bold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-                >
-                  <FaPhone aria-hidden="true" />
-                  Call next
-                </button>
               </div>
             )}
             {currentVisit && (
@@ -246,14 +234,6 @@ function StaffView({ defaultServicePointId = "triage" }) {
                       estimated
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => callPatient(servicePointId, entry.visitId)}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"
-                  >
-                    <FaPhone aria-hidden="true" />
-                    Call
-                  </button>
                 </article>
               ))}
             </div>
