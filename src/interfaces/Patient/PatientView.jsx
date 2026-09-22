@@ -30,8 +30,8 @@ function PatientView({ visitId = "visit-1001" }) {
       </main>
     );
 
-  const statusLabel = isCalled
-    ? "Called - proceed now"
+  const statusLabel = ised
+    ? "ed - proceed now"
     : isServing
       ? "Being served"
       : visit.currentStatus[0].toUpperCase() + visit.currentStatus.slice(1);
@@ -39,7 +39,7 @@ function PatientView({ visitId = "visit-1001" }) {
     ? `Please proceed to ${servicePoint?.room ?? "the service desk"} now.`
     : isServing
       ? "Your care team is with you now."
-      : "We will call your ticket when it is your turn.";
+      : You would be notified through your ticket when it is your turn.";
 
   return (
     <main className="min-h-screen bg-slate-50 font-[Trebuchet_MS,Segoe_UI,sans-serif] text-slate-900">
@@ -176,7 +176,7 @@ function PatientView({ visitId = "visit-1001" }) {
             <p className="m-0 text-[15px] leading-6 text-slate-500">
               {isCalled
                 ? `Show ticket ${visit.ticketNumber} when you arrive.`
-                : "Keep this page open. We will update you when your turn is called."}
+                : "Keep this page open. We will update you when your turn is next."}
             </p>
           </div>
         </section>
