@@ -39,7 +39,7 @@ function PatientView({ visitId = "visit-1001" }) {
     ? `Please proceed to ${servicePoint?.room ?? "the service desk"} now.`
     : isServing
       ? "Your care team is with you now."
-      : You would be notified through your ticket when it is your turn.";
+      : "You would be notified through your ticket when it is your turn.";
 
   return (
     <main className="min-h-screen bg-slate-50 font-[Trebuchet_MS,Segoe_UI,sans-serif] text-slate-900">
